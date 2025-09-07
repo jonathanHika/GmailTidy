@@ -69,7 +69,8 @@ namespace GmailTidy.Wpf
                 return;
             }
             OutputBox.Text = "Scheduling daily run...";
-            await Scheduler.CreateDailyTaskAsync("GmailTidy", "09:00");
+                        await Scheduler.CreateDailyTaskAsync("GmailTidy", "09:00", System.Reflection.Assembly.GetEntryAssembly().Location);
+
             OutputBox.Text = "Daily run scheduled.";
         }
 
