@@ -12,4 +12,9 @@
     <ProjectReference Include="..\GmailTidy.Core\GmailTidy.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+  </ItemGroup>
+
 </Project>
