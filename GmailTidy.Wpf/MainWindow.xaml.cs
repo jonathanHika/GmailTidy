@@ -2,6 +2,9 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using GmailTidy.Core;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using System.Linq;
 
 namespace GmailTidy.Wpf
 {
@@ -74,7 +77,8 @@ namespace GmailTidy.Wpf
             OutputBox.Text = "Daily run scheduled.";
         }
 
-        private async void Analyze_Click(object sender, RoutedEventArgs e)
+
+         private async void Analyze_Click(object sender, RoutedEventArgs e)
         {
             if (_service == null)
             {
@@ -82,13 +86,43 @@ namespace GmailTidy.Wpf
                 return;
             }
             OutputBox.Text = "Analyzing engagement...";
-            await EngagementAnalyzer.AnalyzeAndCreateRulesAsync(_service);
+       await EngagementAnalyAnalyzeEngagementAndCreateRulesAsync(_service)rvice;
             OutputBox.Text = "Engagement analysis complete.";
         }
 
         private async void ClassifyOnce_Click(object sender, RoutedEventArgs e)
-        {
             if (_service == null)
+        {
+            OutputBox.Text = "Please authorize first.";
+            return;
+        }
+        OutputBox.Text = "Classifying last message...";
+        var listRequest = _service.Users.Messages.List("me");
+        listRequest.MaxResults = 1;
+        var listResponse = await listRequest.ExecuteAsync();
+        if (listResponse.Messages == null || listResponse.Messages.Count == 0)
+        {
+            OutputBox.Text = "No messages found.";
+            return;
+        }
+        var messageId = listResponse.Messages[0].Id;
+        var message = await _service.Users.Messages.Get("me", messageId).ExecuteAsync();
+        string subject = "";
+        string snippet = message.Snippet ?? "";
+        string from = "";
+        if (message.Payload?.Headers != null)
+        {
+            foreach (var header in message.Payload.Headers)
+            {
+                if (string.Equals(header.Name, "Subject", StringComparison.OrdinalIgnoreCase))
+                    subject = header.Value;
+                else if (string.Equals(header.Name, "From", StringComparison.OrdinalIgnoreCase))
+                    from = header.Value;
+            }
+        }
+        var classification = await Classifier.ClassifyAsync(subject, snippet, from);
+        OutputBox.Text = $"Classification: {classification}";
+
             {
                 OutputBox.Text = "Please authorize first.";
                 return;
